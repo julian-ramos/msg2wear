@@ -12,18 +12,19 @@ import com.google.android.gms.wearable.MessageApi;
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.Wearable;
 
-public class MainActivity extends Activity implements MessageApi.MessageListener, GoogleApiClient.ConnectionCallbacks{
+public class MainActivity extends Activity {
 
     private TextView mTextView;
     private GoogleApiClient mApiClient;
     private static final String WEAR_MESSAGE_PATH = "/message";
     String TAG = "wear-main";
+    Intent wearServiceIntent;
 
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Intent intent;
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         final WatchViewStub stub = (WatchViewStub) findViewById(R.id.watch_view_stub);
@@ -33,40 +34,14 @@ public class MainActivity extends Activity implements MessageApi.MessageListener
                 mTextView = (TextView) stub.findViewById(R.id.text);
             }
         });
-        intent = new Intent(this, wearServiceListener.class);
-        startService(intent);
-    }
-
-    private void initGoogleApiClient() {
-        mApiClient = new GoogleApiClient.Builder( this )
-                .addApi( Wearable.API )
-                .addConnectionCallbacks( this )
-                .build();
-
-        if( mApiClient != null && !( mApiClient.isConnected() || mApiClient.isConnecting() ) )
-            mApiClient.connect();
-    }
-
-
-    public void onMessageReceived( final MessageEvent messageEvent ) {
-        runOnUiThread( new Runnable() {
-            @Override
-            public void run() {
-                Log.d(TAG, String.format("%s << this was the message", messageEvent.getPath()));
-
-            }
-        });
-    }
-
-
-    @Override
-    public void onConnected(Bundle bundle) {
-
+        wearServiceIntent = new Intent(this, wearServiceListener.class);
+        startService(wearServiceIntent);
     }
 
     @Override
-    public void onConnectionSuspended(int i) {
-
+    protected void onDestroy() {
+        super.onDestroy();
+        stopService(wearServiceIntent);
     }
 }
 
